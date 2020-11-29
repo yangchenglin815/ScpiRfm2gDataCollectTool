@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/ScpiRfm2gDataCollectTool">
+        <file>Resources/desktop.png</file>
+        <file>Resources/checked.png</file>
+        <file>Resources/unchecked.png</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,223 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{f646400c-e7cf-4eb8-bb3b-789ac678e2d2}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{0c1a50a8-507e-4957-b3ce-a7e3788531d9}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{15efbff0-16f0-434c-b629-a1bf508b74c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helper">
+      <UniqueIdentifier>{d6b66705-71df-40b2-bf18-4679afe36898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="App">
+      <UniqueIdentifier>{66f9a05a-1a61-448e-aff3-7480a72989be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Business">
+      <UniqueIdentifier>{b29c91d7-0ce6-4c7a-9057-0c66c4314fac}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScpiRfm2gDataCollectTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ScpiRfm2gDataCollectTool.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ScpiRfm2gDataCollectTool.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\qrc_ScpiRfm2gDataCollectTool.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\DataPathManager.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\FileManager.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="App\AppCleaner.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="App\AppEnvChecker.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="App\AppInitializer.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_AppInitializer.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_AppInitializer.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="App\SystemChecker.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="App\UserConfig.cpp">
+      <Filter>App</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper\Log\GlogManager.cpp">
+      <Filter>Helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\CommonFunc.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils\ThreadManager.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_ThreadManager.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_ThreadManager.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Business\dt_stream_packet.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+    <ClCompile Include="Business\pugixml.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+    <ClCompile Include="Business\rfm2g_sender.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_TcpClient.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_TcpClient.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Business\TcpClient.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_dt_stream_packet.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_dt_stream_packet.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_WorkThread.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_WorkThread.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="Business\WorkThread.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="ScpiRfm2gDataCollectTool.h">
+      <Filter>Header Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ScpiRfm2gDataCollectTool.ui">
+      <Filter>Form Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ScpiRfm2gDataCollectTool.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="App\AppInitializer.h">
+      <Filter>App</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Utils\ThreadManager.h">
+      <Filter>Utils</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Business\TcpClient.h">
+      <Filter>Business</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Business\dt_stream_packet.h">
+      <Filter>Business</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Business\WorkThread.h">
+      <Filter>Business</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GeneratedFiles\ui_ScpiRfm2gDataCollectTool.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\WindowsDump.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\DataPathManager.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\FileManager.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="App\AppCleaner.h">
+      <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\AppEnvChecker.h">
+      <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\SystemChecker.h">
+      <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="App\UserConfig.h">
+      <Filter>App</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper\Log\GlogManager.h">
+      <Filter>Helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CommEnum.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CommonData.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\CommonFunc.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ConstData.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Business\crc32.h">
+      <Filter>Business</Filter>
+    </ClInclude>
+    <ClInclude Include="Business\pugixml.hpp">
+      <Filter>Business</Filter>
+    </ClInclude>
+    <ClInclude Include="Business\rfm2g_sender.h">
+      <Filter>Business</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="ScpiRfm2gDataCollectTool.rc" />
+  </ItemGroup>
+</Project>
