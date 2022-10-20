@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <ShlObj.h>
+#include <QApplication>
 #include "DataPathManager.h"
 
 string DataPathManager::getUserDir()
@@ -25,7 +26,8 @@ string DataPathManager::getDevicePath()
 string DataPathManager::getLogDirPath()
 {
 	//获取日志文件目录
-	return getUserDir() + "\\Log";
+	//return getUserDir() + "\\Log";
+	return QString(QApplication::applicationDirPath() + "\\Log").toStdString();
 }
 
 string DataPathManager::getImagesDirPath()

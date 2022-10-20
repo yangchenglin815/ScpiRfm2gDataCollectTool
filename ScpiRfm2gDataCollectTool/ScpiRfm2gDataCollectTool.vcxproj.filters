@@ -137,6 +137,15 @@
     <ClCompile Include="Business\WorkThread.cpp">
       <Filter>Business</Filter>
     </ClCompile>
+    <ClCompile Include="Business\UdpClient.cpp">
+      <Filter>Business</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_UdpClient.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_UdpClient.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ScpiRfm2gDataCollectTool.h">
@@ -161,6 +170,9 @@
       <Filter>Business</Filter>
     </CustomBuild>
     <CustomBuild Include="Business\WorkThread.h">
+      <Filter>Business</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Business\UdpClient.h">
       <Filter>Business</Filter>
     </CustomBuild>
   </ItemGroup>

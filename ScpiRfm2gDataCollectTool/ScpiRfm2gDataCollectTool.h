@@ -6,6 +6,7 @@
 #include <QTimer>
 #include "ui_ScpiRfm2gDataCollectTool.h"
 #include "TcpClient.h"
+#include "UdpClient.h"
 #include "CommonData.h"
 #include "WorkThread.h"
 
@@ -42,6 +43,7 @@ private:
 	Ui::ScpiRfm2gDataCollectToolClass ui;
 	int m_iTotalChannl;
 	QPointer<TcpClient> m_pTcpClient;
+	QPointer<UdpClient> m_pUdpClient;
 	QList<ChannelInfo> m_channelInfoList;
 	QTimer *m_pTimer;
 	QTimer *m_pUpdateTimer;

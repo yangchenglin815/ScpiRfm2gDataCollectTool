@@ -3,6 +3,7 @@
 #include "crc32.h"
 #include "pugixml.hpp"
 #include "Log/GlogManager.h"
+#include "UserConfig.h"
 #include <cassert>
 #include <algorithm>
 #include <cstddef>
@@ -66,11 +67,6 @@ std::size_t getDtDataTypeSize(int dt)
 
 std::string toSampleValue(ByteBuffer::const_iterator& sample_it, int dt, const LinearScaling& sc)
 {
-	if (&(*sample_it) == nullptr)
-	{
-		return "";
-	}
-	
     switch(dt)
     {
     case dt_sint8:  return std::to_string(static_cast<int8_t>(*sample_it) * sc.factor + sc.offset);
@@ -113,11 +109,6 @@ std::string toSampleValue(ByteBuffer::const_iterator& sample_it, int dt, const L
 
 std::string toSampleValueHex(ByteBuffer::const_iterator& sample_it, uint32_t data_size)
 {
-	if (&(*sample_it) == nullptr)
-	{
-		return "";
-	}
-
     const uint32_t max_bytes_to_show = 16;
     std::stringstream value;
 
@@ -133,10 +124,6 @@ std::string toSampleValueHex(ByteBuffer::const_iterator& sample_it, uint32_t dat
 
 uint32_t getSampleSizeFromSampleIterator(ByteBuffer::const_iterator& sample_it)
 {
-	if (&(*sample_it) == nullptr)
-	{
-		return 0;
-	}
     auto size = *reinterpret_cast<const uint32_t*>(&(*sample_it));
     assert(size != 0);
     return size;
@@ -144,10 +131,6 @@ uint32_t getSampleSizeFromSampleIterator(ByteBuffer::const_iterator& sample_it)
 
 uint64_t getTimestampFromSampleIterator(ByteBuffer::const_iterator& sample_it)
 {
-	if (&(*sample_it) == nullptr)
-	{
-		return 0;
-	}
     auto ts = *reinterpret_cast<const uint64_t*>(&(*sample_it));
     return ts;
 }
@@ -171,6 +154,7 @@ DtStreamPacket::DtStreamPacket(QObject *parent) : QObject(parent)
         m_crc32_table = new uint32_t[256];
         crc32::generate_table(m_crc32_table);
     }
+	m_isDebug = UserConfig::getInstance()->readSetting("RFM2G", "DATADEBUG").toInt();
 }
 
 DtStreamPacket::~DtStreamPacket()
@@ -189,6 +173,8 @@ int32_t DtStreamPacket::processPacketHeader(const ByteBuffer& header_buffer)
         auto pos = readData(header_buffer, header_buffer.begin(), start_token, DT_START_TOKEN_SIZE);
         if (0 != std::strncmp(DT_START_TOKEN, start_token, DT_START_TOKEN_SIZE))
         {
+			if (m_isDebug)
+				LOG(INFO) << "Invalid packet start token.";
            // DTLOG_ERROR("Invalid packet start token");
             return -1;
         }
@@ -208,7 +194,6 @@ int32_t DtStreamPacket::processPacketHeader(const ByteBuffer& header_buffer)
 
 int32_t DtStreamPacket::processSubPackets(const ByteBuffer& packets_buffer)
 {
-	//QMutexLocker locker(&m_pMutex);
     auto pos = packets_buffer.begin();
     bool hit_footer = false;
 
@@ -244,9 +229,7 @@ int32_t DtStreamPacket::processSubPackets(const ByteBuffer& packets_buffer)
 
         if (sub_packet)
         {
-			m_pMutex.lock();
             m_sub_packets.push_back(sub_packet);
-			m_pMutex.unlock();
         }
 
         // iterate to next subpacket
@@ -259,6 +242,8 @@ int32_t DtStreamPacket::processSubPackets(const ByteBuffer& packets_buffer)
 
     if (m_footer.checksum != packet_crc)
     {
+		if (m_isDebug)
+			LOG(INFO) << "Packet checksum error " << std::hex << m_footer.checksum << " != " << packet_crc << std::dec;
         //DTLOG_ERROR("Packet checksum error " << std::hex << m_footer.checksum << " != " << packet_crc << std::dec);
     }
     return 0;
@@ -329,11 +314,13 @@ std::string DtStreamPacket::getPacketInfo() const
 void DtStreamPacket::printChannelSamples()
 {
     //DTLOG_INFO(2, "printChannelSamples");
-	//LOG(INFO) << "printChannelSamples.";
-	QMutexLocker locker(&m_pMutex);
+	if (m_isDebug)
+	   LOG(INFO) << "printChannelSamples.";
     int32_t chan_idx = 0;
     for (const auto& pkt : m_sub_packets)
     {
+		if (m_isDebug)
+		  LOG(INFO) << "sub_packet_type: " << pkt->sub_packet_type;
         switch(pkt->sub_packet_type)
         {
         case SBT_PACKET_INFO:
@@ -368,7 +355,9 @@ void DtStreamPacket::printChannelSamples()
             ++chan_idx;
             break;
         default:
-           // DTLOG_ERROR("Unsupported SubPacketType: " << pkt->sub_packet_type);
+			if (m_isDebug)
+				LOG(INFO) << "Unsupported SubPacketType: " << pkt->sub_packet_type;
+            //DTLOG_ERROR("Unsupported SubPacketType: " << pkt->sub_packet_type);
             break;
         }
     }
@@ -376,7 +365,8 @@ void DtStreamPacket::printChannelSamples()
 
 void DtStreamPacket::clearChannels()
 {
-	QMutexLocker locker(&m_pMutex);
+	if (m_isDebug)
+		LOG(INFO) << "clearChannels.";
     m_sub_packets.clear();
 }
 
@@ -419,7 +409,6 @@ struct DtPacketInfo : public SubPacketBase
     uint32_t number_of_subpackets;
 };
 */
-	//QMutexLocker locker(&m_pMutex);
     auto sub_packet = std::make_shared<DtPacketInfo>();
     subPacketInit(*sub_packet, packet_base);
 
@@ -654,19 +643,26 @@ void DtStreamPacket::printSamplesSyncFixed(int32_t chan_idx, std::shared_ptr<DtC
     std::size_t sample_size = getDtDataTypeSize(channel->channel_data_type);
 
     //std::cout << '{';
-	//LOG(INFO) << "printSamplesSyncFixed <<";
+	if (m_isDebug)
+	   LOG(INFO) << "printSamplesSyncFixed <<";
     for (auto sample_it = channel->sample_data.cbegin();
          sample_it < channel->sample_data.cend(); sample_it = sample_it + sample_size)
     {
+		if (&(*sample_it) == nullptr)
+		{
+			break;
+		}
 		if (m_channel_scalings.size() <= chan_idx)
 		{
 			break;
 		}
-		//LOG(INFO) << "m_channel_scalings SIZE:" << m_channel_scalings.size() << ",IDX: " << chan_idx;
+		if (m_isDebug)
+		  LOG(INFO) << "m_channel_scalings SIZE:" << m_channel_scalings.size() << ",IDX: " << chan_idx;
 		std::string value = toSampleValue(sample_it, channel->channel_data_type, m_channel_scalings.at(chan_idx));
 		emit onDataChanged(chan_idx, QString::fromStdString(value));
 		//std::cout << '{' << value << "}, ";
-		//LOG(INFO) << "{" << value << "}, ";
+		if (m_isDebug)
+		   LOG(INFO) << "{" << value << "}, ";
     }
 
     //std::cout << "},\n";
@@ -674,17 +670,23 @@ void DtStreamPacket::printSamplesSyncFixed(int32_t chan_idx, std::shared_ptr<DtC
 
 void DtStreamPacket::printSamplesSyncVariable(int32_t chan_idx, std::shared_ptr<DtChannelSyncVariable> channel)
 {
-	//LOG(INFO) << "printSamplesSyncVariable <<";
+	if (m_isDebug)
+	   LOG(INFO) << "printSamplesSyncVariable <<";
     auto sample_it = channel->sample_data.cbegin();
     //std::cout << '{';
     do
     {
+		if (&(*sample_it) == nullptr)
+		{
+			break;
+		}
         uint32_t sample_size = getSampleSizeFromSampleIterator(sample_it);
         sample_it += 4;
 		std::string value = toSampleValueHex(sample_it, sample_size);
 		emit onDataChanged(chan_idx, QString::fromStdString(value));
         //std::cout << '{' << sample_size << ',' << value << "}, ";
-		//LOG(INFO) << "{" << sample_size << "," << value << "}, ";
+		if (m_isDebug)
+		  LOG(INFO) << "{" << sample_size << "," << value << "}, ";
         sample_it += sample_size;
     }
     while (sample_it < channel->sample_data.cend());
@@ -694,7 +696,8 @@ void DtStreamPacket::printSamplesSyncVariable(int32_t chan_idx, std::shared_ptr<
 
 void DtStreamPacket::printSamplesAsyncFixed(int32_t chan_idx, std::shared_ptr<DtChannelAsyncFixed> channel)
 {
-	//LOG(INFO) << "printSamplesAsyncFixed <<";
+	if (m_isDebug)
+	  LOG(INFO) << "printSamplesAsyncFixed <<";
     // Note: 8 byte timestamp + size_of(channel_data_type)
     std::size_t sample_size = getDtDataTypeSize(channel->channel_data_type);
     auto sample_it = channel->sample_data.cbegin();
@@ -703,17 +706,23 @@ void DtStreamPacket::printSamplesAsyncFixed(int32_t chan_idx, std::shared_ptr<Dt
 
     do
     {
+		if (&(*sample_it) == nullptr)
+		{
+			break;
+		}
 		if (m_channel_scalings.size() <= chan_idx)
 		{
 			break;
 		}
         uint64_t ts = getTimestampFromSampleIterator(sample_it);
         sample_it += 8;
-		//LOG(INFO) << "m_channel_scalings SIZE:" << m_channel_scalings.size() << ",IDX: " << chan_idx;
+		if (m_isDebug)
+		  LOG(INFO) << "m_channel_scalings SIZE:" << m_channel_scalings.size() << ",IDX: " << chan_idx;
 		std::string value = toSampleValue(sample_it, channel->channel_data_type, m_channel_scalings.at(chan_idx));
 		emit onDataChanged(chan_idx, QString::fromStdString(value));
 		//std::cout << '{' << ts << ", " << value << "}, ";
-		//LOG(INFO) << "{" << ts << ", " << value << "}, ";
+		if (m_isDebug)
+		  LOG(INFO) << "{" << ts << ", " << value << "}, ";
         sample_it += sample_size;
     }
     while (sample_it < channel->sample_data.cend());
@@ -723,7 +732,8 @@ void DtStreamPacket::printSamplesAsyncFixed(int32_t chan_idx, std::shared_ptr<Dt
 
 void DtStreamPacket::printSamplesAsyncVariable(int32_t chan_idx, std::shared_ptr<DtChannelAsyncVariable> channel)
 {
-	//LOG(INFO) << "printSamplesAsyncVariable <<";
+	if (m_isDebug)
+	  LOG(INFO) << "printSamplesAsyncVariable <<";
     // Note: 8 byte timestamp + 4 byte sample size + data_sample
     auto sample_it = channel->sample_data.cbegin();
 
@@ -731,13 +741,19 @@ void DtStreamPacket::printSamplesAsyncVariable(int32_t chan_idx, std::shared_ptr
 
     do
     {
+		if (&(*sample_it) == nullptr)
+		{
+			break;
+		}
         uint64_t ts = getTimestampFromSampleIterator(sample_it);
         sample_it += 8;
         uint32_t sample_size = getSampleSizeFromSampleIterator(sample_it);
         sample_it += 4;
 		std::string value = toSampleValueHex(sample_it, sample_size);
         //std::cout << '{' << ts << ", " << sample_size << ", " << value << "}, ";
-		//LOG(INFO) << "{" << ts << ", " << sample_size << ", " << value << "}, ";
+		if (m_isDebug)
+		  LOG(INFO) << "{" << ts << ", " << sample_size << ", " << value << "}, ";
+		emit onDataChanged(chan_idx, QString::fromStdString(value));
         sample_it += sample_size;
     }
     while (sample_it < channel->sample_data.cend());
@@ -747,13 +763,18 @@ void DtStreamPacket::printSamplesAsyncVariable(int32_t chan_idx, std::shared_ptr
 
 void DtStreamPacket::printCANSamples(int32_t chan_idx, std::shared_ptr<DtChannelAsyncFixed> channel)
 {
-	//LOG(INFO) << "printCANSamples <<";
+	if (m_isDebug)
+	  LOG(INFO) << "printCANSamples <<";
     std::size_t sample_size = getDtDataTypeSize(channel->channel_data_type);
 
     auto sample_it = channel->sample_data.cbegin();
    // std::cout << '{';
     do
     {
+		if (&(*sample_it) == nullptr)
+		{
+			break;
+		}
         uint64_t ts = getTimestampFromSampleIterator(sample_it);
         sample_it += 8;
 
@@ -778,7 +799,8 @@ void DtStreamPacket::printCANSamples(int32_t chan_idx, std::shared_ptr<DtChannel
         }
 
        // std::cout << '{' << ts << ", " << id_str.str() << ", " << data_stream.str() << "}, ";
-		//LOG(INFO) << "{" << ts << ", " << id_str.str() << ", " << data_stream.str() << "}, ";
+		if (m_isDebug)
+		   LOG(INFO) << "{" << ts << ", " << id_str.str() << ", " << data_stream.str() << "}, ";
 		emit onDataChanged(chan_idx, QString::fromStdString(data_stream.str()));
         sample_it += sample_size;
     }

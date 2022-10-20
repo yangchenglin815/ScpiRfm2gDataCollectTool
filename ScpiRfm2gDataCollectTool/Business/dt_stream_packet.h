@@ -210,11 +210,6 @@ struct LinearScaling
 {
     double factor;
     double offset;
-	LinearScaling()
-	{
-		factor = 0.00;
-		offset = 0.00;
-	}
 };
 
 
@@ -293,7 +288,6 @@ private:
     template<typename DtChannelSync>
     SubPacketBasePtr processSync(const ByteBuffer& packets_buffer, ByteBuffer::const_iterator pos, const SubPacketBase& packet_base)
     {
-		QMutexLocker locker(&m_pMutex);
         auto sub_packet = std::make_shared<DtChannelSync>();
         subPacketInit(*sub_packet, packet_base);
 
@@ -312,7 +306,6 @@ private:
     template<typename DtChannelSync>
     SubPacketBasePtr processAsync(const ByteBuffer& packets_buffer, ByteBuffer::const_iterator pos, const SubPacketBase& packet_base)
     {
-		QMutexLocker locker(&m_pMutex);
         auto sub_packet = std::make_shared<DtChannelSync>();
         subPacketInit(*sub_packet, packet_base);
 
@@ -339,5 +332,6 @@ private:
     uint32_t* m_crc32_table;
 
     std::vector<LinearScaling> m_channel_scalings;
-	QMutex m_pMutex;
+
+	bool m_isDebug = false;
 };

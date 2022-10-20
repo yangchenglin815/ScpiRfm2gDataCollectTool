@@ -10,6 +10,7 @@
 #include <QDebug>
 #include <QtConcurrent>
 #include <QMessageBox>
+#include <QFlags>
 
 ScpiRfm2gDataCollectTool::ScpiRfm2gDataCollectTool(QWidget *parent)
 	: QMainWindow(parent)
@@ -50,14 +51,23 @@ void ScpiRfm2gDataCollectTool::closeEvent(QCloseEvent *event)
 	if (m_pWorkThread)
 	{
 		m_pWorkThread->quit();
+		m_pWorkThread->wait();
 	}
-	INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_close();
+	//INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_close();
 	m_pTcpClient->close();
+	m_pUdpClient->Udp_close();
 	SaveIni();
 }
 
 void ScpiRfm2gDataCollectTool::OnConnectClicked()
 {
+	if (ui.comboBox_bindIp->currentIndex() == -1)
+	{
+		AppendText(QStringLiteral("请先绑定网卡及IP..."));
+		QMessageBox::about(this, QStringLiteral("提示"), QStringLiteral("请先绑定网卡及IP"));
+		return;
+	}
+
 	if (ui.lineEdit_timeInterval->text().isEmpty())
 	{
 		AppendText(QStringLiteral("请先设置发送周期..."));
@@ -104,6 +114,10 @@ void ScpiRfm2gDataCollectTool::OnConnectClicked()
 		m_pTimer->setInterval(ui.lineEdit_timeInterval->text().toInt());
 	}
 	m_pTcpClient->close();
+	m_pUdpClient->Udp_close();
+
+	AppendText(QStringLiteral("正在配置Udp管道..."));
+	m_pUdpClient->Udp_start(ui.comboBox_bindIp->currentText());
 
 	AppendText(QStringLiteral("正在配置网络..."));
 	m_pTcpClient->newConnect(m_address, m_SendPort);
@@ -164,6 +178,13 @@ void ScpiRfm2gDataCollectTool::OnConnectClicked()
 
 void ScpiRfm2gDataCollectTool::OnStartClicked()
 {
+	if (ui.comboBox_bindIp->currentIndex() == -1)
+	{
+		AppendText(QStringLiteral("请先绑定网卡及IP..."));
+		QMessageBox::about(this, QStringLiteral("提示"), QStringLiteral("请先绑定网卡及IP"));
+		return;
+	}
+
 	if (ui.lineEdit_timeInterval->text().isEmpty())
 	{
 		AppendText(QStringLiteral("请先设置发送周期..."));
@@ -188,7 +209,7 @@ void ScpiRfm2gDataCollectTool::OnStartClicked()
 		return;
 	}
 
-	INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2gOpen();
+	//INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2gOpen();
 	m_pUpdateTimer->start();
 	m_pTimer->start();
 	if (m_pWorkThread == Q_NULLPTR)
@@ -216,7 +237,7 @@ void ScpiRfm2gDataCollectTool::OnStopClicked()
 	{
 		m_pWorkThread->quit();
 	}
-	INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_close();
+	//INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_close();
 }
 
 void ScpiRfm2gDataCollectTool::OnExitClicked()
@@ -253,7 +274,8 @@ void ScpiRfm2gDataCollectTool::OnTimeout()
 		if (m_pWorkThread)
 		{
 			QList<ChannelInfo> channalInfoList = m_pWorkThread->GetChannelInfo();
-			INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_Write(channalInfoList);
+			//INSTANCE_CRFM2G_SENDER->getInstance()->Rfm2g_Write(channalInfoList);
+			m_pUdpClient->Udp_write(channalInfoList);
 		}
 	});
 }
@@ -415,6 +437,32 @@ void ScpiRfm2gDataCollectTool::InitNetwork()
 	m_pTimer = new QTimer(this);
 	m_pTimer->setInterval(ui.lineEdit_timeInterval->text().toInt());
 	connect(m_pTimer, &QTimer::timeout, this, &ScpiRfm2gDataCollectTool::OnTimeout);
+
+	m_pUdpClient = new UdpClient(this);
+	QList<QNetworkInterface> hosts = m_pUdpClient->GetAllNetworkInterface();
+	QStringList ipList;
+	for (auto &host : hosts)
+	{
+		QFlags<QNetworkInterface::InterfaceFlag> flags = host.flags();
+		if (flags.testFlag(QNetworkInterface::IsLoopBack))
+			continue;
+		if (flags.testFlag(QNetworkInterface::IsUp) && flags.testFlag(QNetworkInterface::IsRunning))
+		{
+			QList<QNetworkAddressEntry> entrys = host.addressEntries();
+			for (auto &entry : entrys)
+			{
+				QHostAddress address = entry.ip();
+				if (address.protocol() == QAbstractSocket::IPv4Protocol)
+					ipList.append(address.toString());
+			}
+		}
+	}
+	if (!ipList.isEmpty())
+	   ui.comboBox_bindIp->addItems(ipList);
+
+	QString boardcast = INSTANCE_USER_CONFIG->readSetting("COMMUNCTION", "BOARDCAST");
+	int index = ui.comboBox_bindIp->findText(boardcast);
+	ui.comboBox_bindIp->setCurrentIndex(index);
 }
 
 void ScpiRfm2gDataCollectTool::SaveIni()
@@ -439,6 +487,12 @@ void ScpiRfm2gDataCollectTool::SaveIni()
 		selectedItem = selectedList.join("|");
 	}
 	INSTANCE_USER_CONFIG->writeSetting("CURCHLINFO", "ITEM", selectedItem);
+
+	if (ui.comboBox_bindIp->currentIndex() != -1)
+	{
+		QString boardcast = ui.comboBox_bindIp->currentText();
+		INSTANCE_USER_CONFIG->writeSetting("COMMUNCTION", "BOARDCAST", boardcast);
+	}
 }
 
 void ScpiRfm2gDataCollectTool::AppendText(QString text)

@@ -43,7 +43,7 @@ private:
 	uint m_nPort;
 	QList<ChannelInfo> m_channelInfoList;
 	QMutex m_mutex;
-	QMutex m_dataMutex;
+	QByteArray m_recvBuffer;
 };
 
 #endif // WORKTHREAD_H
